@@ -1,0 +1,30 @@
+{
+  "name": "puckiq-collector",
+  "version": "0.1.0",
+  "description": "Data Collector for the PuckIQ API",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/PuckIQ/puckiq-collector.git"
+  },
+  "keywords": [
+    "hockey",
+    "puckiq",
+    "stats",
+    "analytics"
+  ],
+  "author": "Zsolt Munoz <zsolt.munoz@puckiq.org>",
+  "license": "GPLv2",
+  "bugs": {
+    "url": "https://github.com/PuckIQ/puckiq-collector/issues"
+  },
+  "dependencies": {
+    "mongoose": "~4.3.7",
+    "request": "~2.69.0",
+    "cheerio": "~0.19.0",
+    "sprintf-js": "~1.0.3"
+  }
+}
