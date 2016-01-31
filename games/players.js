@@ -15,10 +15,11 @@ function playersHandler(request, cheerio) {
           allplayerinfo['nhlid'] = v.nhlid;
           allplayerinfo['jerseynum'] = v.jerseynum;
           allplayerinfo['pos'] = v.pos;
+          allplayerinfo['firstname'] = player.name.replace(' ' + v.lastname, '');
           allplayerinfo['lastname'] = v.lastname;
+          allplayerinfo['fullname'] = player.name;
           allplayerinfo['team'] = v.team;
           allplayerinfo['season'] = v.season;
-          allplayerinfo['name'] = player.name;
           allplayerinfo['dob'] = player.dob;
           allplayerinfo['height'] = player.height;
           allplayerinfo['weight'] = player.weight;
@@ -42,7 +43,7 @@ function playersHandler(request, cheerio) {
             var skater = new Object();
             var fixdata = singleSkater.data.replace(' ','').split(',');
             skater['nhlid'] = singleSkater.id;
-            skater['jerseynum'] = fixdata[0];
+            skater['jerseynum'] = parseInt(fixdata[0]);
             skater['pos'] = fixdata[1];
             skater['lastname'] = fixdata[2].split('.')[1].trim();
             skater['team'] = team;
