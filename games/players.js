@@ -7,14 +7,68 @@ function playersHandler(request, cheerio) {
   var playersURL = 'nhlwc.cdnak.neulion.com/fs1/nhl/league/playerstatsline/';
   var playerpageURL = 'www.nhl.com/ice/player.htm?id=';
 
-  this.playerpage = function(playerid, callback) {
-    playerpage(playerid, function(response) {
-      callback(response);
+  this.playerpage = function(season, gametype, team, callback) {
+    players(season, gametype, team, function(response) {
+      response.forEach(function(v) {
+        playerpage(v.nhlid, function(player) {
+          var allplayerinfo = new Object();
+          allplayerinfo['nhlid'] = v.nhlid;
+          allplayerinfo['jerseynum'] = v.jerseynum;
+          allplayerinfo['pos'] = v.pos;
+          allplayerinfo['lastname'] = v.lastname;
+          allplayerinfo['team'] = v.team;
+          allplayerinfo['season'] = v.season;
+          allplayerinfo['name'] = player.name;
+          allplayerinfo['dob'] = player.dob;
+          allplayerinfo['height'] = player.height;
+          allplayerinfo['weight'] = player.weight;
+          allplayerinfo['drafted'] = (typeof player.drafted === 'undefined') ? 'Undrafted' : player.drafted;
+          allplayerinfo['shootsorcatches'] = player.shootsorcatches;
+          callback(allplayerinfo);
+        });
+      });
     });
   }
 
   var players = function(season, gametype, team, callback) {
     var playersJSON = 'http://' + playersURL + season + '/' + gametype + '/' + team + '/iphone/playerstatsline.json';
+
+    request(playersJSON, function(error, response, json) {
+        if(!error && response.statusCode == 200) {
+          var rosterPlayers = new Array();
+          var allJSON = JSON.parse(json);
+
+          allJSON.skaterData.forEach(function(singleSkater) {
+            var skater = new Object();
+            var fixdata = singleSkater.data.replace(' ','').split(',');
+            skater['nhlid'] = singleSkater.id;
+            skater['jerseynum'] = fixdata[0];
+            skater['pos'] = fixdata[1];
+            skater['lastname'] = fixdata[2].split('.')[1].trim();
+            skater['team'] = team;
+            skater['season'] = season;
+
+            rosterPlayers.push(skater);
+          });
+
+          allJSON.goalieData.forEach(function(singleSkater) {
+            var skater = new Object();
+            var fixdata = singleSkater.data.replace(' ','').split(',');
+            skater['nhlid'] = singleSkater.id;
+            skater['jerseynum'] = fixdata[0];
+            skater['pos'] = fixdata[1];
+            skater['lastname'] = fixdata[2].split('.')[1].trim();
+            skater['team'] = team;
+            skater['season'] = season;
+
+            rosterPlayers.push(skater);
+          });
+
+          callback(rosterPlayers);
+        } else {
+          callback(error);
+        }
+    });
   }
 
   var playerpage = function(playerid, callback) {
@@ -26,8 +80,7 @@ function playersHandler(request, cheerio) {
 				var $ = cheerio.load(modhtml);
 
         var tombstone = $('#tombstone');
-        //var bioInfo = $('.bioInfo', tombstone);
-        var bio = $(tombstone).html().replace(/(\r\n|\n|\r)/gm,"")
+        var bio = $(tombstone).html().replace(/(\r\n|\n|\r)/gm,"");
 
         var playerpageInfo = new Object();
 
@@ -50,26 +103,38 @@ function playersHandler(request, cheerio) {
                   playerpageInfo['height'] = feet+inches;
                   break;
                 case 'birthplace':
+                  var birthplace = $(this).next().text().split(',');
+                  var allbirthplace = new Object();
+                  if(birthplace.length > 2) {
+                    allbirthplace['city'] = birthplace[0].trim();
+                    allbirthplace['state'] = birthplace[1].trim();
+                    allbirthplace['country'] = birthplace[2].trim();
+                  } else {
+                    allbirthplace['city'] = birthplace[0].trim();
+                    allbirthplace['country'] = birthplace[1].trim();
+                  }
+                  playerpageInfo['birthplace'] = allbirthplace;
+                  break;
                 case 'shoots':
-                  playerpageInfo['birthplace'] = $(this).next().text().trim();
+                case 'catches':
+                  playerpageInfo['shootsorcatches'] = $(this).next().text().trim();
                   break;
                 case 'weight':
-                  playerpageInfo['wieght'] = parseInt($(this).next().text().trim());
+                  playerpageInfo['weight'] = parseInt($(this).next().text().trim());
                   break;
                 case 'drafted':
                   var splitDraft = $(this).next().text().trim().split(' ');
                   var draftteam = splitDraft[0].replace('/','');
                   drafted['team'] = draftteam;
-                  drafted['year'] = splitDraft[1];
+                  drafted['year'] = parseInt(splitDraft[1]);
                   break;
                 case 'round':
                   var splitDraft = $(this).next().text().trim().split(' ')[0].split('(');
                   drafted['round'] = parseInt(splitDraft[0]);
                   drafted['overall'] = parseInt(splitDraft[1]);
                   playerpageInfo['drafted'] = drafted;
-              }
-              console.log($(this).text().toLowerCase() + $(this).next().text());
-            }
+              };
+            };
             countline++
           });
         })
