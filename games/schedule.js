@@ -6,12 +6,14 @@ function schedHandler(request) {
 
   var schedURL = 'live.nhl.com/GameData/SeasonSchedule-';
 
+  // exposure for the unexposed schedule function
   this.seasonschedule = function(season, callback) {
     schedule(season, function(response) {
       callback(response);
     });
   }
 
+  // make a request to the season schedule JSON file and pass an array to the callback
   var schedule = function(season, callback) {
     var schedJSON = 'http://' + schedURL + season + '.json';
 
@@ -21,6 +23,7 @@ function schedHandler(request) {
         var scheduledGames = JSON.parse(json);
 
         scheduledGames.forEach(function(singleGame) {
+          // modify the game date & time to reflect the appropriate ISO/Javascript format
           var dt = singleGame.est.split(' ');
           var year = dt[0].substring(0,4);
           var month = dt[0].substring(4,6);

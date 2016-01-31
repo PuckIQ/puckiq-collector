@@ -12,25 +12,32 @@ function playersHandler(request, cheerio) {
       response.forEach(function(v) {
         playerpage(v.nhlid, function(player) {
           var allplayerinfo = new Object();
+          var playerteaminfo = new Object();
+
+          playerteaminfo['team'] = v.team;
+          playerteaminfo['season'] = v.season;
+          playerteaminfo['jerseynum'] = v.jerseynum;
+
           allplayerinfo['nhlid'] = v.nhlid;
-          allplayerinfo['jerseynum'] = v.jerseynum;
           allplayerinfo['pos'] = v.pos;
           allplayerinfo['firstname'] = player.name.replace(' ' + v.lastname, '');
           allplayerinfo['lastname'] = v.lastname;
           allplayerinfo['fullname'] = player.name;
-          allplayerinfo['team'] = v.team;
-          allplayerinfo['season'] = v.season;
           allplayerinfo['dob'] = player.dob;
           allplayerinfo['height'] = player.height;
           allplayerinfo['weight'] = player.weight;
+          allplayerinfo['birthplace'] = player.birthplace;
           allplayerinfo['drafted'] = (typeof player.drafted === 'undefined') ? 'Undrafted' : player.drafted;
           allplayerinfo['shootsorcatches'] = player.shootsorcatches;
+          allplayerinfo['tsj'] = playerteaminfo;
           callback(allplayerinfo);
         });
       });
     });
   }
 
+  // grab JSON data from the neulion source and return an array
+  // the source from neulion will have all players that have played games for the team
   var players = function(season, gametype, team, callback) {
     var playersJSON = 'http://' + playersURL + season + '/' + gametype + '/' + team + '/iphone/playerstatsline.json';
 
@@ -47,7 +54,7 @@ function playersHandler(request, cheerio) {
             skater['pos'] = fixdata[1];
             skater['lastname'] = fixdata[2].split('.')[1].trim();
             skater['team'] = team;
-            skater['season'] = season;
+            skater['season'] = parseInt(season);
 
             rosterPlayers.push(skater);
           });
@@ -56,11 +63,11 @@ function playersHandler(request, cheerio) {
             var skater = new Object();
             var fixdata = singleSkater.data.replace(' ','').split(',');
             skater['nhlid'] = singleSkater.id;
-            skater['jerseynum'] = fixdata[0];
+            skater['jerseynum'] = parseInt(fixdata[0]);
             skater['pos'] = fixdata[1];
             skater['lastname'] = fixdata[2].split('.')[1].trim();
             skater['team'] = team;
-            skater['season'] = season;
+            skater['season'] = parseInt(season);
 
             rosterPlayers.push(skater);
           });
@@ -72,6 +79,8 @@ function playersHandler(request, cheerio) {
     });
   }
 
+  // to be used in conjunction with the unexposed players function
+  // function crawls the appropriate players bio page on nhl.com and returns an object with the players bio
   var playerpage = function(playerid, callback) {
     var playerpageHTML = 'http://' + playerpageURL + playerid;
 
@@ -103,12 +112,14 @@ function playersHandler(request, cheerio) {
                   var inches = parseInt($(this).next().text().split('\'')[1].trim());
                   playerpageInfo['height'] = feet+inches;
                   break;
+                // birthplace will separate city, province/state and country for North American skaters
+                // and city & country for non-NA players
                 case 'birthplace':
                   var birthplace = $(this).next().text().split(',');
                   var allbirthplace = new Object();
                   if(birthplace.length > 2) {
                     allbirthplace['city'] = birthplace[0].trim();
-                    allbirthplace['state'] = birthplace[1].trim();
+                    allbirthplace['province'] = birthplace[1].trim();
                     allbirthplace['country'] = birthplace[2].trim();
                   } else {
                     allbirthplace['city'] = birthplace[0].trim();
@@ -116,6 +127,7 @@ function playersHandler(request, cheerio) {
                   }
                   playerpageInfo['birthplace'] = allbirthplace;
                   break;
+                // combined the shoots & catches variables for skaters and goalies to keep data consistent
                 case 'shoots':
                 case 'catches':
                   playerpageInfo['shootsorcatches'] = $(this).next().text().trim();
@@ -123,6 +135,9 @@ function playersHandler(request, cheerio) {
                 case 'weight':
                   playerpageInfo['weight'] = parseInt($(this).next().text().trim());
                   break;
+                // both the drafted and round variables contain information about the players draft posistion and year
+                // this is combined and placed into an embeded object within the primary object allowing for easier
+                // access and querying
                 case 'drafted':
                   var splitDraft = $(this).next().text().trim().split(' ');
                   var draftteam = splitDraft[0].replace('/','');
