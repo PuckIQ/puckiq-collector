@@ -114,6 +114,7 @@ function ReportHandler(request, cheerio) {
 				nhlgame['awayroster'] = awayRoster;
 				/* ROSTER */
 
+				// Adds the officials to the game report
 				var officials = new Array();
 				$('td[align="center"] table tr', getGameOfficials).each(function(OfficialIndex, OfficialValue) {
 					if(OfficialIndex >= 2 && OfficialIndex <= 5) {
