@@ -7,15 +7,21 @@ function ReportHandler(request, cheerio) {
 	var htmlReportsUrl = 'www.nhl.com/scores/htmlreports';
 
 	this.playbyplay = function(season, gametype, gameid, callback) {
-		playByPlay(season, gametype, gameid, function(response) {
+		reportPXP(season, gametype, gameid, function(response) {
 			callback(response);
 		});
 	};
 
-	var roster = function(season, gametype, gameid, callback) {
+	this.roster = function(season, gametype, gameid, callback) {
+		reportRoster(season, gametype, gameid, function(response) {
+			callback(response);
+		});
+	};
+
+	var reportRoster = function(season, gametype, gameid, callback) {
 		var rosterUrl = 'http://' + htmlReportsUrl + '/' + season + '/RO' + gametype + gameid + '.HTM';
 
-		request(rosterUrl, function(error, gametype, gameid, callback) {
+		request(rosterUrl, function(error, response, html) {
 			if(!error && response.statusCode == 200) {
 				var modhtml = html.replace(/&nbsp;/g,' ');
 				var $ = cheerio.load(modhtml);
@@ -46,11 +52,73 @@ function ReportHandler(request, cheerio) {
 
 				nhlgame['gamestart'] = (parseInt(gametime[0]) < 10) ? sprintf('%02f', parseInt(gametime[0])+12) + ':' + gametime[1].trim() : sprintf('%02f', parseInt(gametime[0])) + ':' + gametime[1].trim();
 
+				var getTeamRosters = $('#Scratches').siblings().html().replace(/(\r\n|\n|\r)/gm,"");
+				var getTeamScratches = $('#Scratches').html().replace(/(\r\n|\n|\r)/gm,"");
+
+				// Parse through all of the rosters to make home & away splits easier
+				// If you can find a simpler way of doing this please modify between *ROSTER*
+				/* ROSTER */
+				var teamRosters = new Array();
+				var teamCount = 0;
+				$('table:nth-child(1) tr', getTeamRosters).each(function(EachroI,EachroV) {
+					if($('td:nth-child(1)', this).text() === '#') {
+						teamCount++;
+					} else {
+						var indPlayer = new Object();
+						indPlayer['team'] = teamCount > 1 ? nhlgame.home : nhlgame.away;
+						indPlayer['jerseynum'] = parseInt($('td:nth-child(1)', this).text());
+						indPlayer['pos'] = $('td:nth-child(2)', this).text();
+						indPlayer['name'] = $('td:nth-child(3)', this).text().toProperCase().replace('  (A)','').replace('  (C)','');
+						teamRosters.push(indPlayer);
+					}
+				});
+
+				var scratchCount = 0;
+				$('table:nth-child(1) tr', getTeamScratches).each(function(EachroI,EachroV) {
+					if($('td:nth-child(1)', this).text() === '#') {
+						scratchCount++;
+					} else {
+						var indPlayer = new Object();
+						indPlayer['team'] = scratchCount > 1 ? nhlgame.home : nhlgame.away;
+						indPlayer['jerseynum'] = parseInt($('td:nth-child(1)', this).text());
+						indPlayer['pos'] = $('td:nth-child(2)', this).text();
+						indPlayer['name'] = $('td:nth-child(3)', this).text().toProperCase().replace('  (A)','').replace('  (C)','');
+						indPlayer['scratch'] = true;
+						teamRosters.push(indPlayer);
+					}
+				});
+
+				var homeRoster = new Array();
+				var awayRoster = new Array();
+				teamRosters.forEach(function(rosterValue, rosterIndex) {
+					var tempRoster = new Object();
+					tempRoster['team'] = rosterValue.team;
+					tempRoster['jerseynum'] = rosterValue.jerseynum;
+					tempRoster['pos'] = rosterValue.pos;
+					tempRoster['name'] = rosterValue.name;
+					if(rosterValue.scratch) {
+						tempRoster['scratch'] = true;
+					}
+
+					if(rosterValue.team === nhlgame.home) {
+						homeRoster.push(tempRoster);
+					} else {
+						awayRoster.push(tempRoster);
+					}
+				});
+
+				nhlgame['homeroster'] = homeRoster;
+				nhlgame['awayroster'] = awayRoster;
+				/* ROSTER */
+
+				callback(nhlgame);
+			} else {
+				callback(error);
 			}
 		});
 	}
 
-	var playByPlay = function(season, gametype, gameid, callback) {
+	var reportPXP = function(season, gametype, gameid, callback) {
 		var playbyplayUrl = 'http://' + htmlReportsUrl + '/' + season + '/PL' + gametype + gameid + '.HTM';
 
 		request(playbyplayUrl, function(error, response, html) {
@@ -248,5 +316,8 @@ function ReportHandler(request, cheerio) {
 	}
 };
 
+String.prototype.toProperCase = function () {
+	return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
+};
 
 module.exports = ReportHandler;
