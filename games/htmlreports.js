@@ -55,6 +55,9 @@ function ReportHandler(request, cheerio) {
 				var getTeamRosters = $('#Scratches').siblings().html().replace(/(\r\n|\n|\r)/gm,"");
 				var getTeamScratches = $('#Scratches').html().replace(/(\r\n|\n|\r)/gm,"");
 
+				var getTeamCoaches = $('#HeadCoaches').html().replace(/(\r\n|\n|\r)/gm,"");
+				var getGameOfficials = $('#Scratches').siblings('tr[valign="top"]').html().replace(/(\r\n|\n|\r)/gm,"");
+
 				// Parse through all of the rosters to make home & away splits easier
 				// If you can find a simpler way of doing this please modify between *ROSTER*
 				/* ROSTER */
@@ -111,6 +114,28 @@ function ReportHandler(request, cheerio) {
 				nhlgame['awayroster'] = awayRoster;
 				/* ROSTER */
 
+				var officials = new Array();
+				$('td[align="center"] table tr', getGameOfficials).each(function(OfficialIndex, OfficialValue) {
+					if(OfficialIndex >= 2 && OfficialIndex <= 5) {
+						var official = new Object();
+						if($('td', OfficialValue).attr('align') == 'left') {
+							var numcount = $(OfficialValue).text().replace('#','').indexOf(' ');
+							var off = $(OfficialValue).text().replace('#','').split(' ');
+							official['jerseynum'] = parseInt(off[0]);
+							official['name'] = $(OfficialValue).text().substring(numcount+2, $(OfficialValue).text().length);
+							official['referee'] = true;
+							officials.push(official);
+						} else {
+							var numcount = $(OfficialValue).text().replace('#','').indexOf(' ');
+							var off = $(OfficialValue).text().replace('#','').split(' ');
+							official['jerseynum'] = parseInt(off[0]);
+							official['name'] = $(OfficialValue).text().substring(numcount+2, $(OfficialValue).text().length);
+							official['linesman'] = true;
+							officials.push(official);
+						}
+					}
+				});
+				nhlgame['officials'] = officials;
 				callback(nhlgame);
 			} else {
 				callback(error);
