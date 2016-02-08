@@ -6,7 +6,8 @@ var teams = [
     "TeamPXP":"COL",
     "teamID":"COL",
     "TeamHashtag":"#Avs",
-    "TeamNick":"AVALANCHE"
+    "TeamNick":"AVALANCHE",
+    "TimeZone":"America/Denver"
   },
   {
     "name":"CHICAGO BLACKHAWKS",
@@ -15,7 +16,8 @@ var teams = [
     "TeamPXP":"CHI",
     "teamID":"CHI",
     "TeamHashtag":"#Blackhawks",
-    "TeamNick":"BLACKHAWKS"
+    "TeamNick":"BLACKHAWKS",
+    "TimeZone":"America/Chicago"
   },
   {
     "name":"COLUMBUS BLUE JACKETS",
@@ -24,7 +26,8 @@ var teams = [
     "TeamPXP":"CBJ",
     "teamID":"CBJ",
     "TeamHashtag":"#CBJ",
-    "TeamNick":"BLUE JACKETS"
+    "TeamNick":"BLUE JACKETS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"ST. LOUIS BLUES",
@@ -33,7 +36,8 @@ var teams = [
     "TeamPXP":"STL",
     "teamID":"STL",
     "TeamHashtag":"#STLBlues",
-    "TeamNick":"BLUES"
+    "TeamNick":"BLUES",
+    "TimeZone":"America/Chicago"
   },
   {
     "name":"BOSTON BRUINS",
@@ -42,7 +46,8 @@ var teams = [
     "TeamPXP":"BOS",
     "teamID":"BOS",
     "TeamHashtag":"#Bruins",
-    "TeamNick":"BRUINS"
+    "TeamNick":"BRUINS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"MONTREAL CANADIENS",
@@ -51,7 +56,8 @@ var teams = [
     "TeamPXP":"MTL",
     "teamID":"MTL",
     "TeamHashtag":"#Habs",
-    "TeamNick":"CANADIENS"
+    "TeamNick":"CANADIENS",
+    "TimeZone":"America/Toronto"
   },
   {
     "name":"VANCOUVER CANUCKS",
@@ -60,7 +66,8 @@ var teams = [
     "TeamPXP":"VAN",
     "teamID":"VAN",
     "TeamHashtag":"#Canucks",
-    "TeamNick":"CANUCKS"
+    "TeamNick":"CANUCKS",
+    "TimeZone":"America/Vancouver"
   },
   {
     "name":"WASHINGTON CAPITALS",
@@ -69,7 +76,8 @@ var teams = [
     "TeamPXP":"WSH",
     "teamID":"WSH",
     "TeamHashtag":"#Caps",
-    "TeamNick":"CAPITALS"
+    "TeamNick":"CAPITALS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"PHOENIX COYOTES",
@@ -78,7 +86,8 @@ var teams = [
     "TeamPXP":"PHX",
     "teamID":"PHX",
     "TeamHashtag":"#Yotes",
-    "TeamNick":"COYOTES"
+    "TeamNick":"COYOTES",
+    "TimeZone":"America/Phoenix"
   },
   {
     "name":"ARIZONA COYOTES",
@@ -87,7 +96,8 @@ var teams = [
     "TeamPXP":"ARZ",
     "teamID":"ARZ",
     "TeamHashtag":"#Yotes",
-    "TeamNick":"COYOTES"
+    "TeamNick":"COYOTES",
+    "TimeZone":"America/Phoenix"
   },
   {
     "name":"NEW JERSEY DEVILS",
@@ -96,7 +106,8 @@ var teams = [
     "TeamPXP":"N.J",
     "teamID":"NJD",
     "TeamHashtag":"#Devils",
-    "TeamNick":"DEVILS"
+    "TeamNick":"DEVILS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"ANAHEIM DUCKS",
@@ -105,7 +116,8 @@ var teams = [
     "TeamPXP":"ANA",
     "teamID":"ANA",
     "TeamHashtag":"#NHLDucks",
-    "TeamNick":"DUCKS"
+    "TeamNick":"DUCKS",
+    "TimeZone":"America/Los_Angeles"
   },
   {
     "name":"CALGARY FLAMES",
@@ -114,7 +126,8 @@ var teams = [
     "TeamPXP":"CGY",
     "teamID":"CGY",
     "TeamHashtag":"#Flames",
-    "TeamNick":"FLAMES"
+    "TeamNick":"FLAMES",
+    "TimeZone":"America/Edmonton"
   },
   {
     "name":"PHILADELPHIA FLYERS",
@@ -123,7 +136,8 @@ var teams = [
     "TeamPXP":"PHI",
     "teamID":"PHI",
     "TeamHashtag":"#Flyers",
-    "TeamNick":"FLYERS"
+    "TeamNick":"FLYERS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"CAROLINA HURRICANES",
@@ -132,7 +146,8 @@ var teams = [
     "TeamPXP":"CAR",
     "teamID":"CAR",
     "TeamHashtag":"#NHLCanes",
-    "TeamNick":"HURRICANES"
+    "TeamNick":"HURRICANES",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"NEW YORK ISLANDERS",
@@ -141,7 +156,8 @@ var teams = [
     "TeamPXP":"NYI",
     "teamID":"NYI",
     "TeamHashtag":"#Isles",
-    "TeamNick":"ISLANDERS"
+    "TeamNick":"ISLANDERS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"WINNIPEG JETS",
@@ -150,7 +166,8 @@ var teams = [
     "TeamPXP":"WPG",
     "teamID":"WPG",
     "TeamHashtag":"#NHLJets",
-    "TeamNick":"JETS"
+    "TeamNick":"JETS",
+    "TimeZone":"America/Winnipeg"
   },
   {
     "name":"LOS ANGELES KINGS",
@@ -159,7 +176,8 @@ var teams = [
     "TeamPXP":"L.A",
     "teamID":"LAK",
     "TeamHashtag":"#LAKings",
-    "TeamNick":"KINGS"
+    "TeamNick":"KINGS",
+    "TimeZone":"America/Los_Angeles"
   },
   {
     "name":"TAMPA BAY LIGHTNING",
@@ -168,7 +186,8 @@ var teams = [
     "TeamPXP":"T.B",
     "teamID":"TBL",
     "TeamHashtag":"#TBLightning",
-    "TeamNick":"LIGHTNING"
+    "TeamNick":"LIGHTNING",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"TORONTO MAPLE LEAFS",
@@ -177,7 +196,8 @@ var teams = [
     "TeamPXP":"TOR",
     "teamID":"TOR",
     "TeamHashtag":"#Leafs",
-    "TeamNick":"MAPLE LEAFS"
+    "TeamNick":"MAPLE LEAFS",
+    "TimeZone":"America/Toronto"
   },
   {
     "name":"EDMONTON OILERS",
@@ -186,7 +206,8 @@ var teams = [
     "TeamPXP":"EDM",
     "teamID":"EDM",
     "TeamHashtag":"#Oilers",
-    "TeamNick":"OILERS"
+    "TeamNick":"OILERS",
+    "TimeZone":"America/Edmonton"
   },
   {
     "name":"FLORIDA PANTHERS",
@@ -195,7 +216,8 @@ var teams = [
     "TeamPXP":"FLA",
     "teamID":"FLA",
     "TeamHashtag":"#FLAPanthers",
-    "TeamNick":"PANTHERS"
+    "TeamNick":"PANTHERS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"PITTSBURGH PENGUINS",
@@ -204,7 +226,8 @@ var teams = [
     "TeamPXP":"PIT",
     "teamID":"PIT",
     "TeamHashtag":"#Pens",
-    "TeamNick":"PENGUINS"
+    "TeamNick":"PENGUINS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"NASHVILLE PREDATORS",
@@ -213,7 +236,8 @@ var teams = [
     "TeamPXP":"NSH",
     "teamID":"NSH",
     "TeamHashtag":"#Preds",
-    "TeamNick":"PREDATORS"
+    "TeamNick":"PREDATORS",
+    "TimeZone":"America/Chicago"
   },
   {
     "name":"NEW YORK RANGERS",
@@ -222,7 +246,8 @@ var teams = [
     "TeamPXP":"NYR",
     "teamID":"NYR",
     "TeamHashtag":"#NYR",
-    "TeamNick":"RANGERS"
+    "TeamNick":"RANGERS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"DETROIT RED WINGS",
@@ -231,7 +256,8 @@ var teams = [
     "TeamPXP":"DET",
     "teamID":"DET",
     "TeamHashtag":"#RedWings",
-    "TeamNick":"RED WINGS"
+    "TeamNick":"RED WINGS",
+    "TimeZone":"America/Detroit"
   },
   {
     "name":"BUFFALO SABRES",
@@ -240,7 +266,8 @@ var teams = [
     "TeamPXP":"BUF",
     "teamID":"BUF",
     "TeamHashtag":"#Sabres",
-    "TeamNick":"SABRES"
+    "TeamNick":"SABRES",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"OTTAWA SENATORS",
@@ -249,7 +276,8 @@ var teams = [
     "TeamPXP":"OTT",
     "teamID":"OTT",
     "TeamHashtag":"#Sens",
-    "TeamNick":"SENATORS"
+    "TeamNick":"SENATORS",
+    "TimeZone":"America/Toronto"
   },
   {
     "name":"SAN JOSE SHARKS",
@@ -258,7 +286,8 @@ var teams = [
     "TeamPXP":"S.J",
     "teamID":"SJS",
     "TeamHashtag":"#SJSharks",
-    "TeamNick":"SHARKS"
+    "TeamNick":"SHARKS",
+    "TimeZone":"America/Los_Angeles"
   },
   {
     "name":"DALLAS STARS",
@@ -267,7 +296,8 @@ var teams = [
     "TeamPXP":"DAL",
     "teamID":"DAL",
     "TeamHashtag":"#DallasStars",
-    "TeamNick":"STARS"
+    "TeamNick":"STARS",
+    "TimeZone":"America/Chicago"
   },
   {
     "name":"ATLANTA THRASHERS",
@@ -276,7 +306,8 @@ var teams = [
     "TeamPXP":"ATL",
     "teamID":"ALT",
     "TeamHashtag":"#Thrashers",
-    "TeamNick":"THRASHERS"
+    "TeamNick":"THRASHERS",
+    "TimeZone":"America/New_York"
   },
   {
     "name":"MINNESOTA WILD",
@@ -285,7 +316,8 @@ var teams = [
     "TeamPXP":"MIN",
     "teamID":"MIN",
     "TeamHashtag":"#MNWild",
-    "TeamNick":"WILD"
+    "TeamNick":"WILD",
+    "TimeZone":"America/Chicago"
   }
 ];
 

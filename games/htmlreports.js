@@ -1,4 +1,5 @@
 var sprintf = require('sprintf-js').sprintf,
+	moment = require('moment-timezone'),
 	teams = require('../teams');
 
 function ReportHandler(request, cheerio) {
@@ -18,6 +19,12 @@ function ReportHandler(request, cheerio) {
 		});
 	};
 
+	this.vtoi = function(season, gametype, gameid, callback) {
+		reportVToi(season, gametype, gameid, function(response) {
+			callback(response);
+		});
+	};
+
 	var reportRoster = function(season, gametype, gameid, callback) {
 		var rosterUrl = 'http://' + htmlReportsUrl + '/' + season + '/RO' + gametype + gameid + '.HTM';
 
@@ -28,29 +35,37 @@ function ReportHandler(request, cheerio) {
 
 				var nhlgame = new Object();
 
-				nhlgame['season'] = season;
-				nhlgame['gametype'] = (gametype == "02") ? "REGULAR" : "PLAYOFF";
+				nhlgame['season'] = parseInt(season);
+				nhlgame['gametype'] = gametype;
 				nhlgame['gameid'] = gameid;
 
 				var hometeam = $(($('#Home').first().children('tr:nth-child(3)').html()).replace('<br>','|')).text().split('|')[0].trim();
 				var awayteam = $(($('#Visitor').first().children('tr:nth-child(3)').html()).replace('<br>','|')).text().split('|')[0].trim();
 
 				var homeabbr;
+				var gametimezone;
 
 				teams.forEach(function(v,i) {
 					if(v.name.toUpperCase() == hometeam) {
 						nhlgame['home'] = v.teamID;
 						homeabbr = v.TeamPXP;
+						gametimezone = v.TimeZone;
 					}
 					if(v.name.toUpperCase() == awayteam) {
 						nhlgame['away'] = v.teamID;
 					}
 				});
 
-				nhlgame['gamedate'] = $('#GameInfo').first().children('tr:nth-child(4)').text().trim();
+				// bit of a pain in the ass but this helps capture puck drop time
+				var gameDate = $('#GameInfo').first().children('tr:nth-child(4)').text().trim();
 				var gametime = ($('#GameInfo').first().children('tr:nth-child(6)').text().replace('Start','').trim().split(';')[0]).split(':');
+				var gameStart = (parseInt(gametime[0]) < 10) ? sprintf('%02f', parseInt(gametime[0])+12) + ':' + gametime[1].trim() : sprintf('%02f', parseInt(gametime[0])) + ':' + gametime[1].trim();
 
-				nhlgame['gamestart'] = (parseInt(gametime[0]) < 10) ? sprintf('%02f', parseInt(gametime[0])+12) + ':' + gametime[1].trim() : sprintf('%02f', parseInt(gametime[0])) + ':' + gametime[1].trim();
+				var gamestartJS = new Date(gameDate + ' ' + gameStart);
+				var gamestartISO = moment.tz(gamestartJS, gametimezone);
+				nhlgame['gamestart'] = gamestartISO.format();
+
+				//nhlgame['gamestartiso'] = moment.tz
 
 				var getTeamRosters = $('#Scratches').siblings().html().replace(/(\r\n|\n|\r)/gm,"");
 				var getTeamScratches = $('#Scratches').html().replace(/(\r\n|\n|\r)/gm,"");
@@ -112,6 +127,21 @@ function ReportHandler(request, cheerio) {
 
 				nhlgame['homeroster'] = homeRoster;
 				nhlgame['awayroster'] = awayRoster;
+
+				// Adds the coaches to the game report
+				var gameCoaches = new Array();
+				$('table:nth-child(1) tr', getTeamCoaches).each(function(CoachIndex,CoachValue) {
+					var tempCoach = new Object();
+					tempCoach['team'] = (CoachIndex > 0) ? nhlgame.home : nhlgame.away;
+					tempCoach['coach'] = $(CoachValue).text().toProperCase();
+					if(CoachIndex > 0) {
+						gameCoaches.push(tempCoach);
+					} else {
+						gameCoaches.push(tempCoach);
+					}
+				});
+
+				nhlgame['coaches'] = gameCoaches;
 				/* ROSTER */
 
 				// Adds the officials to the game report
@@ -137,12 +167,116 @@ function ReportHandler(request, cheerio) {
 					}
 				});
 				nhlgame['officials'] = officials;
+
 				callback(nhlgame);
 			} else {
 				callback(error);
 			}
 		});
 	}
+
+	var reportVToi = function(season, gametype, gameid, callback) {
+		var toiUrl = 'http://' + htmlReportsUrl + '/' + season + '/TV' + gametype + gameid + '.HTM';
+
+		request(toiUrl, function(error, response, html) {
+			if(!error && response.statusCode == 200) {
+				var modhtml = html.replace(/&nbsp;/g,' ');
+				var $ = cheerio.load(modhtml);
+
+				var nhlgame = new Object();
+
+				nhlgame['season'] = season;
+				nhlgame['gametype'] = (gametype == "02") ? "REGULAR" : "PLAYOFF";
+				nhlgame['gameid'] = gameid;
+
+				var hometeam = $(($('#Home').first().children('tr:nth-child(3)').html()).replace('<br>','|')).text().split('|')[0].trim();
+				var awayteam = $(($('#Visitor').first().children('tr:nth-child(3)').html()).replace('<br>','|')).text().split('|')[0].trim();
+
+				var homeabbr;
+				var gametimezone;
+
+				teams.forEach(function(v,i) {
+					if(v.name.toUpperCase() == hometeam) {
+						nhlgame['home'] = v.teamID;
+						homeabbr = v.TeamPXP;
+						gametimezone = v.TimeZone;
+					}
+					if(v.name.toUpperCase() == awayteam) {
+						nhlgame['away'] = v.teamID;
+					}
+				});
+
+				// bit of a pain in the ass but this helps capture puck drop time
+				var gameDate = $('#GameInfo').first().children('tr:nth-child(4)').text().trim();
+				var gametime = ($('#GameInfo').first().children('tr:nth-child(6)').text().replace('Start','').trim().split(';')[0]).split(':');
+				var gameStart = (parseInt(gametime[0]) < 10) ? sprintf('%02f', parseInt(gametime[0])+12) + ':' + gametime[1].trim() : sprintf('%02f', parseInt(gametime[0])) + ':' + gametime[1].trim();
+
+				var gamestartJS = new Date(gameDate + ' ' + gameStart);
+				var gamestartISO = moment.tz(gamestartJS, gametimezone);
+				nhlgame['gamestart'] = gamestartISO.format();
+
+				// Grab the table which sits on the last TR tag withing the first table under the class pageBreakAfter
+				var toiTable = $($('div.pageBreakAfter > table:nth-child(1)').html().replace(/(\r\n|\n|\r)/gm,"")).last('tr');
+
+				// Remove the period & game totals from the page
+				$(toiTable).find('td[colspan="8"]').not('.playerHeading').remove();
+				var toiVAll = new Array();
+
+				// Unlike the other HTML reports these pages use one large table and use classes to separate all of the player TOI information
+				// Its a bit wierd to find all of the correct information which is why I removed all of the totals prior
+				$(toiTable).each(function(toiIndex, toiValue) {
+					var toiVAllShifts = new Array();
+					var jerseynum,lastname,firstname;
+					$('tr', toiValue).each(function(trIndex, trValue) {
+						if($('td', trValue).hasClass('playerHeading')) {
+							var playerInfo = $('.playerHeading', trValue).html().replace(',','').split(' ');
+							jerseynum = parseInt(playerInfo[0]);
+							lastname = playerInfo[1].toProperCase();
+							firstname = playerInfo[2].toProperCase();
+						}
+
+						// oddColor & evenColor classes hold all of the pertinent information
+						if($(trValue).hasClass('oddColor') || $(trValue).hasClass('evenColor')) {
+							var toiVShift = new Object();
+							$('td', trValue).each(function(tdIndex, tdValue) {
+								switch (tdIndex) {
+									case 0:
+										toiVShift['jerseynum'] = jerseynum;
+										toiVShift['lastname'] = lastname;
+										toiVShift['firstname'] = firstname;
+										toiVShift['shiftnumber'] = parseInt($(tdValue).text());
+										break;
+									case 1:
+										toiVShift['period'] = ($(tdValue).text() != 'OT') ? parseInt($(tdValue).text()) : 4;
+										break;
+									case 2:
+										var updown = $(tdValue).text().split('/')[0].trim();
+										var minsec = updown.split(':');
+										toiVShift['shiftstart'] = parseInt(minsec[0]*60) + parseInt(minsec[1]);
+										break;
+									case 3:
+										var updown = $(tdValue).text().split('/')[0].trim();
+										var minsec = updown.split(':');
+										toiVShift['shiftend'] = parseInt(minsec[0]*60) + parseInt(minsec[1]);
+										break;
+									case 4:
+										var minsec = $(tdValue).text().split(':');
+										toiVShift['shiftduration'] = parseInt(minsec[0]*60) + parseInt(minsec[1]);
+										break;
+								}
+							});
+							// toiVAllShifts is a rather ugly array containing all of the information it will be broken into an easier to read/use object
+							toiVAllShifts.push(toiVShift);
+						}
+					});
+					console.log(toiVAllShifts);
+				});
+				callback(toiVAll);
+			} else {
+				callback(error);
+			}
+		});
+	};
 
 	var reportPXP = function(season, gametype, gameid, callback) {
 		var playbyplayUrl = 'http://' + htmlReportsUrl + '/' + season + '/PL' + gametype + gameid + '.HTM';
@@ -162,21 +296,27 @@ function ReportHandler(request, cheerio) {
 				var awayteam = $(($('#Visitor').first().children('tr:nth-child(3)').html()).replace('<br>','|')).text().split('|')[0].trim();
 
 				var homeabbr;
+				var gametimezone;
 
 				teams.forEach(function(v,i) {
 					if(v.name.toUpperCase() == hometeam) {
 						nhlgame['home'] = v.teamID;
 						homeabbr = v.TeamPXP;
+						gametimezone = v.TimeZone;
 					}
 					if(v.name.toUpperCase() == awayteam) {
 						nhlgame['away'] = v.teamID;
 					}
 				});
 
-				nhlgame['gamedate'] = $('#GameInfo').first().children('tr:nth-child(4)').text().trim();
+				// bit of a pain in the ass but this helps capture puck drop time
+				var gameDate = $('#GameInfo').first().children('tr:nth-child(4)').text().trim();
 				var gametime = ($('#GameInfo').first().children('tr:nth-child(6)').text().replace('Start','').trim().split(';')[0]).split(':');
+				var gameStart = (parseInt(gametime[0]) < 10) ? sprintf('%02f', parseInt(gametime[0])+12) + ':' + gametime[1].trim() : sprintf('%02f', parseInt(gametime[0])) + ':' + gametime[1].trim();
 
-				nhlgame['gamestart'] = (parseInt(gametime[0]) < 10) ? sprintf('%02f', parseInt(gametime[0])+12) + ':' + gametime[1].trim() : sprintf('%02f', parseInt(gametime[0])) + ':' + gametime[1].trim();
+				var gamestartJS = new Date(gameDate + ' ' + gameStart);
+				var gamestartISO = moment.tz(gamestartJS, gametimezone);
+				nhlgame['gamestart'] = gamestartISO.format();
 
 				var getEvents = $('tr.evenColor');
 				var events = new Array();
@@ -340,6 +480,8 @@ function ReportHandler(request, cheerio) {
 			}
 		});
 	}
+
+
 };
 
 String.prototype.toProperCase = function () {
