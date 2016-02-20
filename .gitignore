@@ -34,3 +34,5 @@ node_modules
 
 # Test Files
 test.js
+games/reports.js
+games/playbyplay.js

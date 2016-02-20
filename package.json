@@ -22,10 +22,14 @@
     "url": "https://github.com/PuckIQ/puckiq-collector/issues"
   },
   "dependencies": {
+    "jquery": "~2.2.0",
+    "jsdom": "~8.0.2",
+    "moment-timezone": "~0.5.0",
     "mongoose": "~4.3.7",
     "request": "~2.69.0",
-    "cheerio": "~0.19.0",
-    "sprintf-js": "~1.0.3",
-    "moment-timezone": "~0.5.0"
+    "sprintf-js": "~1.0.3"
+  },
+  "engines": {
+    "node": ">=5.0.0"
   }
 }
