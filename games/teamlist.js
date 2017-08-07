@@ -93,8 +93,8 @@ var teams = [
     "name":"ARIZONA COYOTES",
     "TeamSchedule":"ARIZONA",
     "TeamCity":"ARIZONA",
-    "TeamPXP":"ARZ",
-    "teamID":"ARZ",
+    "TeamPXP":"ARI",
+    "teamID":"ARI",
     "TeamHashtag":"#Yotes",
     "TeamNick":"COYOTES",
     "TimeZone":"America/Phoenix"
@@ -318,6 +318,16 @@ var teams = [
     "TeamHashtag":"#MNWild",
     "TeamNick":"WILD",
     "TimeZone":"America/Chicago"
+  },
+  {
+    "name":"VEGAS GOLDEN KNIGHTS",
+    "TeamSchedule":"VEGAS",
+    "TeamCity":"VEGAS",
+    "TeamPXP":"VGK",
+    "teamID":"VGK",
+    "TeamHashtag":"#BoldInGold",
+    "TeamNick":"GOLDEN KNIGHTS",
+    "TimeZone":"America/Pacific"
   }
 ];
 

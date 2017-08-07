@@ -1,4 +1,4 @@
-var htmlreports = require('./games/reports');
+var htmlreports = require('./games/htmlreports');
 var util = require('util');
 
 var reports = new htmlreports();
