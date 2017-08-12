@@ -304,7 +304,7 @@ var teams = [
     "TeamSchedule":"ATLANTA",
     "TeamCity":"ATLANTA",
     "TeamPXP":"ATL",
-    "teamID":"ALT",
+    "teamID":"ATL",
     "TeamHashtag":"#Thrashers",
     "TeamNick":"THRASHERS",
     "TimeZone":"America/New_York"
