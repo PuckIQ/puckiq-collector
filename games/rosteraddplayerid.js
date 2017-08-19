@@ -21,10 +21,23 @@ var getRoster = function (gameid, callback) {
   }
 };
 
+var parsePlayerInfo = function(roster, callback) {
+  var season = roster.season;
+  var hometm = roster.home.team;
+  var awaytm = roster.away.team;
+}
+
 var getPlayerInfo = function(playerinfo, callback) {
+  var query = {
+    season: playerinfo.season,
+    teamseasonid: playerinfo.seasonid,
+    team: playerinfo.team,
+    lastName: playerinfo.lastname,
+    position: playerinfo.pos
+  };
   try {
     MongoClient.connect(dbUri, (err, db) => {
-
+      var Collection = db.collection('nhlplayers');
     });
   } catch (err) {
     console.log(err);

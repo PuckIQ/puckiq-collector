@@ -2,6 +2,8 @@ var argv = require('minimist')(process.argv.slice(2));
 const jsdom = require('jsdom');
 const { JSDOM } = jsdom;
 
+var https = require('https');
+
 var MongoClient = require('mongodb').MongoClient;
 var sprintf = require('sprintf-js').sprintf;
 
@@ -28,7 +30,7 @@ var getSchedules = function (query, callback) {
       });
     });
   } catch (err) {
-    console.log(err);
+    callback(err);
   }
 };
 
@@ -45,11 +47,48 @@ var addRoster = function (roster, callback) {
           db.close();
         });
       } catch (err) {
-        console.log(err);
+        callback(err);
       }
     }
   });
 };
+
+var getPlayerInfo = function (options, callback) {
+  try {
+    MongoClient.connect(dbUri, (err, db) => {
+      var Collection = db.collection('nhlplayers');
+      var results = Collection.find(options);
+
+      results.toArray((err, document) => {
+        if (!err)
+          callback(document);
+        else
+          callback(err);
+        db.close();
+      });
+    });
+  } catch (err) {
+    callback(err);
+  }
+};
+
+var updatePlayerInfo = function (options, possible, callback) {
+  try {
+    MongoClient.connect(dbUri, (err, db) => {
+      var Collection = db.collection('nhlplayers');
+      var newposition = { possible: possible };
+      Collection.updateOne(options, { $addToSet: newposition }, (err, data) => {
+        if (!err)
+          callback(data);
+        else
+          callback(err);
+        db.close();
+      });
+    });
+  } catch (err) {
+    callback(err);
+  }
+}
 
 var getRoster = function (schedules, callback) {
   var baseUrl = 'http://www.nhl.com/scores/htmlreports/';
@@ -61,23 +100,12 @@ var getRoster = function (schedules, callback) {
         var $ = require('jquery')(dom.window);
 
         var nhlgame = new Object();
-        var hm = new Object();
-        var aw = new Object();
 
         nhlgame['season'] = schedVal.season;
         nhlgame['_id'] = schedVal._id;
 
         var hometeam = $(($('#Home > tbody', html).first().children('tr:nth-child(3)').html()).replace('<br>', '|')).text().split('|')[0].trim();
         var awayteam = $(($('#Visitor > tbody', html).first().children('tr:nth-child(3)').html()).replace('<br>', '|')).text().split('|')[0].trim();
-
-        var homeabbr;
-        var gametimezone;
-
-        hm['team'] = schedVal.home;
-        hm['seasonid'] = schedVal.homeseasonid;
-        aw['team'] = schedVal.away;
-        aw['seasonid'] = schedVal.awayseasonid;
-        homeabbr = schedVal.homepxp;
 
         var getTeamRosters = $('#Scratches', html).siblings().html().replace(/(\r\n|\n|\r)/gm, "");
         var getTeamScratches = $('#Scratches', html).html().replace(/(\r\n|\n|\r)/gm, "");
@@ -86,7 +114,7 @@ var getRoster = function (schedules, callback) {
         var getGameOfficials = $('#Scratches', html).siblings('tr[valign="top"]').html().replace(/(\r\n|\n|\r)/gm, "");
 
         // Parse through all of the officials
-        var officials = new Array();
+        var rosters = new Array();
         $('tr', getGameOfficials).each(function (OfficialIndex, OfficialValue) {
           if (OfficialIndex >= 2 && OfficialIndex <= 5) {
             var official = new Object();
@@ -96,124 +124,174 @@ var getRoster = function (schedules, callback) {
               official['jerseynum'] = parseInt(off[0]);
               official['name'] = $(OfficialValue).text().substring(numcount + 2, $(OfficialValue).text().length);
               official['referee'] = true;
-              officials.push(official);
+              official['official'] = true;
+              rosters.push(official);
             } else {
               var numcount = $(OfficialValue).text().replace('#', '').indexOf(' ');
               var off = $(OfficialValue).text().replace('#', '').split(' ');
               official['jerseynum'] = parseInt(off[0]);
               official['name'] = $(OfficialValue).text().substring(numcount + 2, $(OfficialValue).text().length);
               official['linesman'] = true;
-              officials.push(official);
+              official['official'] = true;
+              rosters.push(official);
             }
           }
         });
 
-        nhlgame['officials'] = officials;
-
         // Parse through all of the rosters to make home & away splits easier
         // If you can find a simpler way of doing this please modify between *ROSTER*
         /* ROSTER */
-        var homeRoster = new Array();
-        var awayRoster = new Array();
-        var teamCount = 0;
-
-        $('tr', getTeamRosters).each(function (EachroI, EachroV) {
-          var indPlayer = new Object();
-          var lastName
-          if ($('td:first', EachroV).text() === '#') {
-            teamCount++;
-          } else {
-            $('td', EachroV).each(function (EachColI, EachColV) {
-              switch (EachColI) {
-                case 0:
-                  indPlayer['jerseynum'] = parseInt($(EachColV).text());
-                  break;
-                case 1:
-                  indPlayer['pos'] = $(EachColV).text();
-                  break;
-                case 2:
-                  indPlayer['name'] = $(EachColV).text().toProperCase().replace('  (A)', '').replace('  (C)', '');
-                  var nameArr = indPlayer['name'].split(' ');
-                  indPlayer['lastname'] = nameArr[nameArr.length - 1];
-                  break;
+        var playersAll = new Array();
+        $('table', getTeamRosters).each(function (EachTableI, EachTableV) {
+          $('tr', EachTableV).each(function (EachRowI, EachRowV) {
+            var singlePlayer = new Object();
+            if ($('td:first', EachRowV).text() != '#') {
+              $('td', EachRowV).each(function (EachColI, EachColV) {
+                switch (EachColI) {
+                  case 0:
+                    singlePlayer['jerseynum'] = parseInt($(EachColV).text());
+                    break;
+                  case 1:
+                    singlePlayer['pos'] = $(EachColV).text();
+                    break;
+                  case 2:
+                    singlePlayer['name'] = $(EachColV).text().toProperCase().replace('  (A)', '').replace('  (C)', '');
+                    var nameArr = singlePlayer['name'].split(' ');
+                    singlePlayer['lastname'] = nameArr[nameArr.length - 1].split('-')[0];
+                    break;
+                }
+              });
+              if (EachTableI > 0) {
+                singlePlayer['team'] = schedVal.home;
+                singlePlayer['teamseasonid'] = schedVal.homeseasonid;
+                singlePlayer['gameplayed'] = true;
+                singlePlayer['homeaway'] = 'home'
+              } else {
+                singlePlayer['team'] = schedVal.away;
+                singlePlayer['teamseasonid'] = schedVal.awayseasonid;
+                singlePlayer['gameplayed'] = true;
+                singlePlayer['homeaway'] = 'away'
               }
-            });
-            if (teamCount > 1)
-              homeRoster.push(indPlayer);
-            else
-              awayRoster.push(indPlayer);
-          }
+              playersAll.push(singlePlayer);
+            }
+          });
         });
 
         // Add the scratches to the game report
-        var homeScratches = new Array();
-        var awayScratches = new Array();
-        var scratchCount = 0;
-        $('tr', getTeamScratches).each(function (EachroI, EachroV) {
-          var indPlayer = new Object();
-          if ($('td:first', EachroV).text() === '#') {
-            scratchCount++;
-          } else {
-            $('td', EachroV).each(function (EachColI, EachColV) {
-              switch (EachColI) {
-                case 0:
-                  indPlayer['jerseynum'] = parseInt($(EachColV).text());
-                  break;
-                case 1:
-                  indPlayer['pos'] = $(EachColV).text();
-                  break;
-                case 2:
-                  indPlayer['name'] = $(EachColV).text().toProperCase().replace('  (A)', '').replace('  (C)', '');
-                  var nameArr = indPlayer['name'].split(' ');
-                  indPlayer['lastname'] = nameArr[nameArr.length - 1];
-                  break;
+        $('table', getTeamScratches).each(function (EachTableI, EachTableV) {
+          $('tr', EachTableV).each(function (EachroI, EachroV) {
+            if ($(EachroV).text().trim() != "") {
+              var singlePlayer = new Object();
+              if ($('td:first', EachroV).text().trim() != '#') {
+                $('td', EachroV).each(function (EachColI, EachColV) {
+                  switch (EachColI) {
+                    case 0:
+                      singlePlayer['jerseynum'] = parseInt($(EachColV).text());
+                      break;
+                    case 1:
+                      singlePlayer['pos'] = $(EachColV).text();
+                      break;
+                    case 2:
+                      singlePlayer['name'] = $(EachColV).text().toProperCase().replace('  (A)', '').replace('  (C)', '');
+                      var nameArr = singlePlayer['name'].split(' ');
+                      singlePlayer['lastname'] = nameArr[nameArr.length - 1].split('-')[0];
+                      singlePlayer['scratched'] = true;
+                      break;
+                  }
+                });
+                if (EachTableI > 0) {
+                  singlePlayer['team'] = schedVal.home;
+                  singlePlayer['teamseasonid'] = schedVal.homeseasonid;
+                  singlePlayer['homeaway'] = 'home'
+                } else {
+                  singlePlayer['team'] = schedVal.away;
+                  singlePlayer['teamseasonid'] = schedVal.awayseasonid;
+                  singlePlayer['homeaway'] = 'away'
+                }
+                playersAll.push(singlePlayer);
               }
-            });
-            if (scratchCount > 1)
-              homeScratches.push(indPlayer);
-            else
-              awayScratches.push(indPlayer);
-          }
+            }
+          });
         });
-
-        hm['scratches'] = homeScratches;
-        aw['scratches'] = awayScratches;
 
         // Add coaches to the teams
         var homeCoach, awayCoach;
         var coachCount = 0;
         $('tr', getTeamCoaches).each(function (CoachIndex, CoachValue) {
-          var tempCoach = new Object();
-          tempCoach = $(CoachValue).text().toProperCase();
+          var indCoach = new Object();
+          var tempCoach = $(CoachValue).text().toProperCase();
           if (CoachIndex > 0) {
-            homeCoach = tempCoach
+            indCoach['name'] = tempCoach;
+            indCoach['team'] = schedVal.home;
+            indCoach['teamseasonid'] = schedVal.homeseasonid;
+            indCoach['coach'] = true;
+            rosters.push(indCoach);
           } else {
-            awayCoach = tempCoach
+            indCoach['name'] = tempCoach;
+            indCoach['team'] = schedVal.away;
+            indCoach['teamseasonid'] = schedVal.awayseasonid;
+            indCoach['coach'] = true;
+            rosters.push(indCoach);
           }
           coachCount++;
         });
 
-        hm['coach'] = homeCoach;
-        aw['coach'] = awayCoach;
+        var playerCount = 0
+        playersAll.forEach((v, i) => {
+          var q1 = {
+            lastName: { $regex: new RegExp(v.lastname, 'i') },
+            teamabbr: v.team,
+            teamseasonid: v.teamseasonid
+          };
+          getPlayerInfo(q1, (d1) => {
+            playerCount++;
 
-        hm['roster'] = homeRoster;
-        aw['roster'] = awayRoster;
+            var playerData;
+            if (d1.length > 1) {
+              d1.forEach((dv, di) => {
+                //console.log(v.name + ' : ' + dv.fullName);
+                if (v.name.toUpperCase() === dv.fullName.toUpperCase())
+                  playerData = dv;
+              });
+            } else {
+              playerData = d1[0];
+            }
 
-        nhlgame['home'] = hm;
-        nhlgame['away'] = aw;
+            if (playerData != null) {
+              //var playerData = d1[0];
+              v['playerseasonid'] = playerData._id;
+              v['playerid'] = playerData.playerid;
+              rosters.push(v);
+              var possible = playerData.possible;
+              if (possible.indexOf(v.pos) < 0) {
+                updatePlayerInfo(q1, v.pos, (u1) => {
+                  console.log('UPDATED: [ ' + schedVal._id + ' ] ' + v.name + ' (' + v.pos + '), ' + v.team + ', ' + v.teamseasonid);
+                });
+              }
+            }
 
-        callback(nhlgame);
+            if(playerData == null && v.gameplayed == true) {
+              console.log('!IMPORTANT - PLAYER RECORD MISSING: [ ' + schedVal._id + ' ] ' + v.name + ' (' + v.pos + '), ' + v.team + ', ' + v.teamseasonid);
+            }
+
+            if (playersAll.length === playerCount) {
+              nhlgame['roster'] = rosters;
+              callback(nhlgame);
+            }
+          });
+        });
       } catch (err) {
-        console.log(err);
+        callback(err);
       }
     });
   });
 };
 
-getSchedules({ season: argv.season, _id: { $gte: argv.gameid, $lt: argv.gameid + 100 } }, (schedules) => {
+getSchedules({ season: argv.season, _id: { $gte: argv.gameid, $lt: argv.gameid + argv.increment } }, (schedules) => {
+  //getSchedules({ season: argv.season, _id: argv.gameid }, (schedules) => {
   getRoster(schedules, (roster) => {
     addRoster(roster, (data) => {
-      console.log(argv.gameid);
+
     });
   });
 });
