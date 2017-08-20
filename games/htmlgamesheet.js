@@ -66,6 +66,8 @@ var getGameSheets = function (schedules, callback) {
 
         nhlgame['_id'] = schedVal._id;
         nhlgame['season'] = schedVal.season;
+        nhlgame['gamedate'] = schedVal.simplegamedate;
+        nhlgame['gamestart'] = schedVal.gamedate;
 
         var hometeam = $(($('#Home > tbody', html).first().children('tr:nth-child(3)').html()).replace('<br>', '|')).text().split('|')[0].trim();
         var awayteam = $(($('#Visitor > tbody', html).first().children('tr:nth-child(3)').html()).replace('<br>', '|')).text().split('|')[0].trim();

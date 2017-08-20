@@ -103,6 +103,8 @@ var getRoster = function (schedules, callback) {
 
         nhlgame['season'] = schedVal.season;
         nhlgame['_id'] = schedVal._id;
+        nhlgame['gamedate'] = schedVal.simplegamedate;
+        nhlgame['gamestart'] = schedVal.gamedate;
 
         var hometeam = $(($('#Home > tbody', html).first().children('tr:nth-child(3)').html()).replace('<br>', '|')).text().split('|')[0].trim();
         var awayteam = $(($('#Visitor > tbody', html).first().children('tr:nth-child(3)').html()).replace('<br>', '|')).text().split('|')[0].trim();
