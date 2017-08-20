@@ -80,7 +80,7 @@ var addSchedules = function(schedule, callback) {
     });
 };
 
-/*var allSeasons = [
+var allSeasons = [
   {season: 20102011, startdate: '2010-10-07', enddate: '2011-04-10'},
   {season: 20112012, startdate: '2011-10-06', enddate: '2012-04-07'},
   {season: 20122013, startdate: '2013-01-19', enddate: '2013-04-28'},
@@ -88,17 +88,16 @@ var addSchedules = function(schedule, callback) {
   {season: 20142015, startdate: '2014-10-08', enddate: '2015-04-11'},
   {season: 20152016, startdate: '2015-10-07', enddate: '2016-04-10'},
   {season: 20162017, startdate: '2016-10-12', enddate: '2017-04-09'}
-];*/
+];
 
-var allSeasons = [
+/*var allSeasons = [
   {season: 20152016, startdate: '2015-10-07', enddate: '2016-04-10'}
-]
+]*/
 
 allSeasons.forEach((val) => {
   teamList(val.season, (allTeams) => {
     scheduleBuilder(val, allTeams, (schedule) => {
       addSchedules(schedule, (data) => {
-        console.log(data);
       });
     });
   });

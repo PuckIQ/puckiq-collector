@@ -53,7 +53,6 @@ for (var i = 0; i < availseasons.length; i++) {
   var curseason = availseasons[i];
   fullTeamInfo(curseason, function (data) {
     addTeams(data, function (result) {
-      console.log(result);
     });
   });
 }

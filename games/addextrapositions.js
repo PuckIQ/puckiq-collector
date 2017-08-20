@@ -1,3 +1,4 @@
+var argv = require('minimist')(process.argv.slice(2));
 var MongoClient = require('mongodb').MongoClient;
 var config = require('../config.js');
 var dbUri = 'mongodb://' + config.dbUser + ':' + config.dbPass + '@' + config.dbUri + ':' + config.dbPort + '/' + config.dbName + '?slaveOk=true';
@@ -6,7 +7,7 @@ var getPlayersBySeason = function (season, callback) {
   try {
     MongoClient.connect(dbUri, (err, db) => {
       var Collection = db.collection('nhlplayers');
-      var results = Collection.find({ season: season });
+      var results = Collection.find({ season: season, possible: { $exists: false } });
 
       results.toArray((err, docs) => {
         if (!err)
@@ -39,10 +40,9 @@ var addPlayerPostion = function (playerinfo, callback) {
   }
 }
 
-getPlayersBySeason(20112012, (playerinfo) => {
+getPlayersBySeason(parseInt(argv.season), (playerinfo) => {
   playerinfo.forEach((player) => {
     addPlayerPostion(player, (data) => {
-      //console.log(data);
     });
   });
 });
