@@ -172,6 +172,8 @@ getSchedules({ season: argv.season, _id: { $gte: argv.gameid, $lt: argv.gameid +
         toiVal['homeaway'] = player[0].roster.homeaway;
         toiVal['playerseasonid'] = player[0].roster.playerseasonid;
         toiVal['playerid'] = player[0].roster.playerid;
+        toiVal['gamedate'] = player[0].gamedate;
+        toiVal['gamestart'] = player[0].gamestart;
         addTOI(toiVal, (data) => {
 
         });

@@ -65,7 +65,7 @@ var getGameRoster = function (gameid, callback) {
 var addPlayerStats = function (playerevents, callback) {
   try {
     MongoClient.connect(dbUri, (err, db) => {
-      var Collection = db.collection('nhleventtally');
+      var Collection = db.collection('nhlplayerevents');
       Collection.update({ gameid: playerevents.gameid, playerid: playerevents.playerid, situation: playerevents.situation }, playerevents, { upsert: true }, (err, docs) => {
         if (!err)
           callback(docs);
