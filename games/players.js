@@ -66,7 +66,8 @@ var addPlayers = function(players, callback) {
     });
 }
 
-var availseasons = [20102011, 20112012, 20122013, 20132014, 20142015, 20152016, 20162017];
+//var availseasons = [20102011, 20112012, 20122013, 20132014, 20142015, 20152016, 20162017];
+var availseasons = [20172018];
 
 for (var x = 0; x < availseasons.length; x++) {
   var curseason = availseasons[x];

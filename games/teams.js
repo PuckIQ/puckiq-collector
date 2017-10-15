@@ -47,7 +47,8 @@ var addTeams = function (team, callback) {
   });
 }
 
-var availseasons = ['20102011', '20112012', '20122013', '20132014', '20142015', '20152016', '20162017'];
+//var availseasons = ['20102011', '20112012', '20122013', '20132014', '20142015', '20152016', '20162017'];
+var availseasons = ['20172018'];
 
 for (var i = 0; i < availseasons.length; i++) {
   var curseason = availseasons[i];
